@@ -33,13 +33,18 @@ jobs:
           python-version: '3.12'
 
       - name: Install Node Dependencies
-        run: npm ci || npm install
+        run: npm install
+
+      - name: Build TypeScript Packages
+        run: npm run build
 
       - name: Run Deterministic Financial Ledger Tests
         run: npm test
 
       - name: Run Optimization Solver Tests
-        run: python packages/optimization-engine/test_solver.py
+        run: |
+          export PYTHONPATH=packages/optimization-engine
+          python packages/optimization-engine/test_solver.py
 
   deploy:
     environment:
