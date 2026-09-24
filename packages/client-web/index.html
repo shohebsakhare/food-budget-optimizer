@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Food Budget Optimizer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes pulse-border {
+      0%, 100% { border-color: rgba(245, 158, 11, 0.4); }
+      50% { border-color: rgba(245, 158, 11, 1); }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased p-3 sm:p-6 font-sans min-h-screen">
+  <div class="max-w-4xl mx-auto space-y-6">
+
+    <!-- Top App Bar -->
+    <header class="flex items-center justify-between border-b border-slate-200 pb-4">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center text-xl font-bold border border-emerald-500/20">
+          🍲
+        </div>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight text-slate-900">Food Budget Optimizer</h1>
+          <p class="text-xs text-slate-500">Autonomous Weekly Food Allocation & Dynamic Replanning</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-2">
+        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+          ● Cycle Active
+        </span>
+        <button onclick="resetToInitialState()" class="px-3 py-1.5 text-xs rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 transition">
+          Reset Demo
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Grid: Budget Card & Metrics -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      
+      <!-- Total Budget Card -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3">
+        <div class="flex justify-between items-start">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Weekly Budget</span>
+          <span class="text-xs font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-600">Target</span>
+        </div>
+        <div class="text-3xl font-extrabold text-slate-900" id="uiTotalBudget">£120.00</div>
+        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden flex">
+          <div id="uiProgressBarActual" class="bg-amber-500 h-full transition-all duration-500" style="width: 28.3%;"></div>
+          <div id="uiProgressBarProjected" class="bg-emerald-500/60 h-full transition-all duration-500" style="width: 17.5%;"></div>
+        </div>
+        <div class="flex justify-between text-[11px] text-slate-500">
+          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-500"></span> Actual: <strong id="uiSpentTotal" class="text-slate-900">£34.00</strong></span>
+          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Planned: <strong id="uiPlannedRemaining" class="text-slate-900">£21.00</strong></span>
+        </div>
+      </div>
+
+      <!-- Remaining Cash Balance -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-2">
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Remaining Cash</span>
+        <div class="text-3xl font-extrabold text-emerald-600" id="uiRemainingCash">£86.00</div>
+        <p class="text-xs text-slate-500" id="uiCashDescription">
+          £120.00 total minus £34.00 actual expenses recorded.
+        </p>
+      </div>
+
+      <!-- Variance / Net Status -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-2" id="uiStatusBox">
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Projected Surplus / Deficit</span>
+        <div class="text-3xl font-extrabold text-emerald-600" id="uiProjectedSurplus">+£65.00</div>
+        <p class="text-xs text-slate-500" id="uiVarianceStatusText">
+          Full week projected spend is £55.00 (within £120.00).
+        </p>
+      </div>
+
+    </div>
+
+    <!-- Interactive AI Assistant Banner -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <span class="text-xl">🤖</span>
+          <h2 class="font-bold text-sm text-slate-900">Conversational Budget Copilot</h2>
+        </div>
+        <span class="text-[11px] text-slate-400">Zero-Hallucination Deterministic Engine</span>
+      </div>
+
+      <!-- Quick Action Buttons -->
+      <div class="flex flex-wrap gap-2 pt-1">
+        <button onclick="triggerWednesdayOverspend()" id="btnWedOverspend" class="px-3 py-1.5 text-xs font-medium bg-amber-500/10 text-amber-700 hover:bg-amber-500/20 border border-amber-500/30 rounded-xl transition">
+          ⚡ Simulate User: "I spent £25 instead of £18 on Wednesday takeaway"
+        </button>
+        <button onclick="triggerUnderbudgetSpend()" class="px-3 py-1.5 text-xs font-medium bg-blue-500/10 text-blue-700 hover:bg-blue-500/20 border border-blue-500/30 rounded-xl transition">
+          ⚡ Simulate User: "Burgers only cost £5 instead of £8"
+        </button>
+      </div>
+
+      <!-- Chat Bubble Output -->
+      <div id="aiChatBubble" class="p-4 rounded-xl bg-slate-50 text-xs text-slate-700 leading-relaxed space-y-2 border border-slate-200">
+        <div class="font-semibold text-emerald-600 flex items-center gap-1.5">
+          <span>● Assistant Ready</span>
+        </div>
+        <p id="aiChatMessage">
+          "Welcome! Your weekly budget is set to £120.00. Monday and Tuesday dinner were cooked for £9.00. Tell me whenever you make a purchase or want to reallocate your plan."
+        </p>
+      </div>
+
+      <!-- Replanning Options Card (Hidden until variance detected) -->
+      <div id="replanCard" class="hidden p-4 rounded-xl bg-amber-50 border border-amber-300 space-y-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <span class="text-amber-800 font-bold text-sm">⚠️ Overspend Detected (+£7.00)</span>
+          </div>
+          <span class="text-[11px] text-amber-700 font-medium">Deterministic Recovery Options</span>
+        </div>
+        <p class="text-xs text-slate-600">
+          Wednesday takeaway was £25.00 (projected was £18.00). Pick a strategy to balance the remaining week:
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          <!-- Option 1 -->
+          <div class="p-3.5 rounded-xl border border-slate-200 bg-white hover:border-emerald-500/50 transition cursor-pointer flex flex-col justify-between space-y-2 shadow-sm" onclick="applyOption(1)">
+            <div>
+              <div class="flex justify-between items-start">
+                <span class="text-xs font-bold text-slate-900">Option 1: Channel Downgrade</span>
+                <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Saves £25.00</span>
+              </div>
+              <p class="text-[11px] text-slate-500 mt-1">
+                Swap Friday Restaurant (£30.00) to Gourmet Home Cooking (£5.00).
+              </p>
+            </div>
+            <button class="w-full py-1.5 text-xs font-medium rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition">
+              Apply Option 1
+            </button>
+          </div>
+
+          <!-- Option 2 -->
+          <div class="p-3.5 rounded-xl border border-slate-200 bg-white hover:border-emerald-500/50 transition cursor-pointer flex flex-col justify-between space-y-2 shadow-sm" onclick="applyOption(2)">
+            <div>
+              <div class="flex justify-between items-start">
+                <span class="text-xs font-bold text-slate-900">Option 2: Batch Leftover Synergy</span>
+                <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Saves £6.00</span>
+              </div>
+              <p class="text-[11px] text-slate-500 mt-1">
+                Cook double-batch burgers on Saturday; enjoy free leftovers on Sunday.
+              </p>
+            </div>
+            <button class="w-full py-1.5 text-xs font-medium rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 transition">
+              Apply Option 2
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7-Day Meal Plan Table -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="font-bold text-sm text-slate-900">7-Day Weekly Food Plan</h3>
+        <span class="text-xs text-slate-500">Target: 21 Meals (Dinner focused)</span>
+      </div>
+
+      <div class="divide-y divide-slate-100" id="mealSlotsContainer">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const initialSlots = [
+      { id: 'mon', day: 'Monday', channel: 'home_cook', title: 'Cook chicken curry', projected: 500, actual: 500, status: 'consumed', channelLabel: 'Home Cook' },
+      { id: 'tue', day: 'Tuesday', channel: 'home_cook', title: 'Cook pasta', projected: 400, actual: 400, status: 'consumed', channelLabel: 'Home Cook' },
+      { id: 'wed', day: 'Wednesday', channel: 'takeaway', title: 'Takeaway', projected: 1800, actual: null, status: 'planned', channelLabel: 'Takeaway' },
+      { id: 'thu', day: 'Thursday', channel: 'leftover', title: 'Leftovers', projected: 200, actual: null, status: 'planned', channelLabel: 'Leftover' },
+      { id: 'fri', day: 'Friday', channel: 'restaurant', title: 'Restaurant', projected: 3000, actual: null, status: 'planned', channelLabel: 'Restaurant' },
+      { id: 'sat', day: 'Saturday', channel: 'home_cook', title: 'Cook burgers', projected: 800, actual: null, status: 'planned', channelLabel: 'Home Cook' },
+      { id: 'sun', day: 'Sunday', channel: 'home_cook', title: 'Cook stir fry', projected: 600, actual: null, status: 'planned', channelLabel: 'Home Cook' }
+    ];
+
+    let state = {
+      totalBudgetPence: 12000,
+      slots: JSON.parse(JSON.stringify(initialSlots)),
+      appliedOption: null
+    };
+
+    function formatMoney(pence) {
+      const isNeg = pence < 0;
+      const abs = Math.abs(pence);
+      const str = (abs / 100).toFixed(2);
+      return (isNeg ? '-' : '') + '£' + str;
+    }
+
+    function render() {
+      let actualSpent = 0;
+      let plannedRemaining = 0;
+
+      state.slots.forEach(s => {
+        if (s.status === 'consumed') {
+          actualSpent += (s.actual !== null ? s.actual : s.projected);
+        } else {
+          plannedRemaining += s.projected;
+        }
+      });
+
+      const remainingCash = state.totalBudgetPence - actualSpent;
+      const projectedFinal = actualSpent + plannedRemaining;
+      const netSurplus = state.totalBudgetPence - projectedFinal;
+
+      document.getElementById('uiTotalBudget').innerText = formatMoney(state.totalBudgetPence);
+      document.getElementById('uiSpentTotal').innerText = formatMoney(actualSpent);
+      document.getElementById('uiPlannedRemaining').innerText = formatMoney(plannedRemaining);
+      document.getElementById('uiRemainingCash').innerText = formatMoney(remainingCash);
+      document.getElementById('uiCashDescription').innerText = 
+        `${formatMoney(state.totalBudgetPence)} total minus ${formatMoney(actualSpent)} actual expenses recorded.`;
+
+      const actualPct = Math.min(100, (actualSpent / state.totalBudgetPence) * 100);
+      const plannedPct = Math.min(100 - actualPct, (plannedRemaining / state.totalBudgetPence) * 100);
+      document.getElementById('uiProgressBarActual').style.width = actualPct + '%';
+      document.getElementById('uiProgressBarProjected').style.width = plannedPct + '%';
+
+      const surplusEl = document.getElementById('uiProjectedSurplus');
+      const surplusStatusEl = document.getElementById('uiVarianceStatusText');
+
+      if (netSurplus >= 0) {
+        surplusEl.innerText = '+' + formatMoney(netSurplus);
+        surplusEl.className = 'text-3xl font-extrabold text-emerald-600';
+        surplusStatusEl.innerText = `Full week projected spend is ${formatMoney(projectedFinal)} (within budget).`;
+      } else {
+        surplusEl.innerText = formatMoney(netSurplus);
+        surplusEl.className = 'text-3xl font-extrabold text-red-600';
+        surplusStatusEl.innerText = `Projected spend is ${formatMoney(projectedFinal)} (${formatMoney(Math.abs(netSurplus))} deficit!).`;
+      }
+
+      const container = document.getElementById('mealSlotsContainer');
+      container.innerHTML = '';
+
+      state.slots.forEach(slot => {
+        const row = document.createElement('div');
+        row.className = 'py-3.5 flex items-center justify-between text-xs transition';
+
+        let badgeColor = 'bg-blue-50 text-blue-700 border-blue-200';
+        if (slot.channel === 'takeaway') badgeColor = 'bg-amber-50 text-amber-700 border-amber-200';
+        if (slot.channel === 'restaurant') badgeColor = 'bg-purple-50 text-purple-700 border-purple-200';
+        if (slot.channel === 'leftover') badgeColor = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+
+        const isConsumed = slot.status === 'consumed';
+        const costToDisplay = isConsumed ? slot.actual : slot.projected;
+
+        let varianceNote = '';
+        if (isConsumed && slot.actual !== null && slot.actual !== slot.projected) {
+          const delta = slot.actual - slot.projected;
+          const sign = delta > 0 ? '+' : '';
+          varianceNote = `<span class="ml-1.5 text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded border border-amber-200">${sign}${formatMoney(delta)} variance</span>`;
+        }
+
+        row.innerHTML = `
+          <div class="flex items-center space-x-3">
+            <span class="font-bold text-slate-800 w-20">${slot.day}</span>
+            <span class="px-2 py-0.5 rounded text-[11px] font-medium border ${badgeColor}">${slot.channelLabel}</span>
+            <span class="${isConsumed ? 'line-through text-slate-400' : 'text-slate-800'} font-medium">${slot.title}</span>
+            ${varianceNote}
+          </div>
+          <div class="flex items-center space-x-4">
+            <span class="font-mono font-semibold text-slate-800">${formatMoney(costToDisplay)}</span>
+            <span class="text-[11px] ${isConsumed ? 'text-emerald-600 font-medium' : 'text-slate-400'}">
+              ${isConsumed ? '✓ Consumed' : '⏳ Planned'}
+            </span>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function triggerWednesdayOverspend() {
+      const wed = state.slots.find(s => s.id === 'wed');
+      wed.status = 'consumed';
+      wed.actual = 2500;
+
+      document.getElementById('aiChatMessage').innerHTML = 
+        `"Recorded your takeaway expense of <strong>£25.00</strong> (+£7.00 vs planned £18.00). You have <strong>£86.00</strong> remaining in your total weekly budget. Below are deterministic options to recover the £7.00 overspend."`;
+      
+      document.getElementById('replanCard').classList.remove('hidden');
+      render();
+    }
+
+    function triggerUnderbudgetSpend() {
+      const sat = state.slots.find(s => s.id === 'sat');
+      sat.projected = 500;
+      sat.title = 'Cook burgers (Budget Ingredients)';
+      document.getElementById('aiChatMessage').innerHTML = 
+        `"Updated Saturday burgers cost to <strong>£5.00</strong> (saved £3.00). Your buffer has increased!"`;
+      render();
+    }
+
+    function applyOption(optNum) {
+      if (optNum === 1) {
+        const fri = state.slots.find(s => s.id === 'fri');
+        fri.channel = 'home_cook';
+        fri.channelLabel = 'Home Cook';
+        fri.title = 'Cook Chicken Curry (Budget Rebalance)';
+        fri.projected = 500;
+
+        document.getElementById('aiChatMessage').innerHTML = 
+          `"Option 1 applied! Replaced Friday Restaurant with home-cooked chicken curry (£5.00). You saved <strong>£25.00</strong>, bringing your projected weekly spend to <strong>£55.00</strong> with a massive <strong>£65.00</strong> surplus!"`;
+      } else if (optNum === 2) {
+        const sun = state.slots.find(s => s.id === 'sun');
+        sun.channel = 'leftover';
+        sun.channelLabel = 'Leftover';
+        sun.title = 'Leftover Burgers from Saturday';
+        sun.projected = 0;
+
+        document.getElementById('aiChatMessage').innerHTML = 
+          `"Option 2 applied! Saturday burgers will now yield Sunday leftovers (£0.00). You saved <strong>£6.00</strong>!"`;
+      }
+
+      document.getElementById('replanCard').classList.add('hidden');
+      render();
+    }
+
+    function resetToInitialState() {
+      state.slots = JSON.parse(JSON.stringify(initialSlots));
+      document.getElementById('replanCard').classList.add('hidden');
+      document.getElementById('aiChatMessage').innerText = 
+        "Welcome! Your weekly budget is set to £120.00. Monday and Tuesday dinner were cooked for £9.00. Tell me whenever you make a purchase or want to reallocate your plan.";
+      render();
+    }
+
+    render();
+  </script>
+</body>
+</html>

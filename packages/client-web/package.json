@@ -1,0 +1,8 @@
+{
+  "name": "@food-budget/client-web",
+  "version": "1.0.0",
+  "description": "Mobile-first responsive web client for Food Budget Optimizer",
+  "scripts": {
+    "start": "node serve.js"
+  }
+}
