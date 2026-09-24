@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "public": true,
+  "name": "food-budget-optimizer",
+  "builds": [
+    {
+      "src": "packages/client-web/index.html",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "packages/client-web/index.html"
+    }
+  ]
+}

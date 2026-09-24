@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: food-budget-optimizer
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: node packages/client-web/serve.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+
+databases:
+  - name: food-budget-db
+    databaseName: food_budget_db
+    user: foodbudget
+    plan: free
