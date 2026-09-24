@@ -35,8 +35,11 @@ jobs:
       - name: Install Node Dependencies
         run: npm install
 
-      - name: Build TypeScript Packages
-        run: npm run build
+      - name: Build Core Ledger
+        run: npm run build:ledger
+
+      - name: Build AI Orchestrator
+        run: npm run build:orchestrator
 
       - name: Run Deterministic Financial Ledger Tests
         run: npm test

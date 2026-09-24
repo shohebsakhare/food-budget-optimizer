@@ -7,7 +7,9 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build --workspaces --if-present",
+    "build:ledger": "npm run build --workspace=@food-budget/core-ledger",
+    "build:orchestrator": "npm run build --workspace=@food-budget/ai-orchestrator",
+    "build": "npm run build:ledger && npm run build:orchestrator",
     "test": "npm run test --workspaces --if-present",
     "demo": "node packages/ai-orchestrator/dist/demo.js",
     "web": "node packages/client-web/serve.js",
